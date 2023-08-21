@@ -4,9 +4,12 @@ import json
 import scrapy
 from scrapy.http.cookies import CookieJar
 
+from w3lib.html import remove_tags
 
-class SpiderDijikala(scrapy.Spider):
-    name = "SpiderDijikala"
+
+
+class SoratHesabSpider(scrapy.Spider):
+    name = 'spiderSoratHesab'
 
     cookies = {
         "tracker_glob_new": "dVDsxXb",
@@ -56,26 +59,17 @@ class SpiderDijikala(scrapy.Spider):
 
     def parse(self, response):
         self.set_cookies(response)
-        for i in range(1, 299):
-            url = f'https://seller.digikala.com/ajax/variants/search/?sortColumn=&sortOrder=desc&page={i}&items=10&'
-            yield scrapy.Request(url=url,
-                                method='GET',
-                                dont_filter=True,
-                                cookies=self.cookies,
-                                callback=self.get_info)
+        # for i in range(1, 136):
+        url = 'https://seller.digikala.com/sellerinvoice/getsellerinvoiceitemdetail/?InvoiceId=3158688&FinancialNotationId=60&page=1'
+        yield scrapy.Request(url=url,
+                            method='GET', 
+                            cookies=self.cookies,
+                            callback=self.get_info)
 
     def get_info(self, response):
-        data = json.loads(response.text)
-        items = data['data']['items']
-        for item in items:
-            title = item['product_variant_title'][::-1]
-            price_list_latin = item['price_list']
-            print("+" * 90)
-            print(title)
-            print(price_list_latin)
-            print("+" * 90)
+        for tr in response.css('td'):
+            td = tr.css('td.uk-table-shrink::text')
             print("*" * 90)
-            yield {
-                "title": title,
-                "price": price_list_latin
-            }
+            print(td[0].get())
+            print("*" * 90)
+
